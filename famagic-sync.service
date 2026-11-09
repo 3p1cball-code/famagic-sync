@@ -1,0 +1,14 @@
+[Unit]
+Description=famagic Sync (Family lists, Supabase -> this host)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/famagic-sync
+ExecStart=/usr/bin/python3 %h/famagic-sync/famagic_sync.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

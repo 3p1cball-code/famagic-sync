@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [ { "Name": "Alexander Riedel" } ],
+        "Category": "Utilities",
+        "Description": "Aufgaben aus famagic, die demnächst fällig sind",
+        "Icon": "view-task",
+        "Id": "org.kde.famagic.widget",
+        "License": "MIT",
+        "Name": "Famagic",
+        "Version": "1.0.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
