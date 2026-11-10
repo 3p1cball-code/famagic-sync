@@ -273,7 +273,8 @@ PlasmoidItem {
         Image {
             id: wallpaperImage
             anchors.fill: parent
-            visible: false
+            visible: true
+            opacity: 0.0
             asynchronous: true
             cache: true
             source: root.wallpaperPath ? "file://" + root.wallpaperPath : ""
@@ -293,6 +294,7 @@ PlasmoidItem {
             anchors.fill: parent
             source: wallpaperImage
             visible: root.wallpaperPath !== "" && Plasmoid.configuration.backgroundBlurRadius > 0.001
+            opacity: 1.0
             blurEnabled: true
             blur: Plasmoid.configuration.backgroundBlurRadius
             blurMax: 64
