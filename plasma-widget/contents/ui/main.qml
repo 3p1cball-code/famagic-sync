@@ -9,6 +9,8 @@ import QtQuick.Controls as QQC2
 PlasmoidItem {
     id: root
 
+    Plasmoid.backgroundHints: PlasmaCore.Types.TranslucentBackground
+
     property var snap: null
     property var tasks: []
     property var memberList: []
