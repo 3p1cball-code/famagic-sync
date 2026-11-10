@@ -274,7 +274,7 @@ PlasmoidItem {
             id: wallpaperImage
             anchors.fill: parent
             visible: true
-            opacity: 0.0
+            opacity: 1.0
             asynchronous: true
             cache: true
             source: root.wallpaperPath ? "file://" + root.wallpaperPath : ""
