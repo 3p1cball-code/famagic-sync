@@ -26,6 +26,7 @@ PlasmoidItem {
 
     preferredRepresentation: fullRepresentation
 
+
     Plasma5Support.DataSource {
         id: executable
         engine: "executable"
@@ -239,6 +240,7 @@ PlasmoidItem {
     }
 
     fullRepresentation: Item {
+        id: fullRoot
         Layout.minimumWidth: Kirigami.Units.gridUnit * 14
         Layout.minimumHeight: Kirigami.Units.gridUnit * 9
         Layout.preferredWidth: Kirigami.Units.gridUnit * 20
@@ -253,7 +255,8 @@ PlasmoidItem {
                 var wgo = Plasmoid.containment.wallpaperGraphicsObject;
                 if (!wgo)
                     return Qt.rect(0, 0, 0, 0);
-                return Qt.rect(plasmoid.geometry.x - wgo.x, plasmoid.geometry.y - wgo.y, width, height);
+                var p = fullRoot.mapToItem(wgo, 0, 0);
+                return Qt.rect(p.x, p.y, fullRoot.width, fullRoot.height);
             }
             live: false
             visible: false
