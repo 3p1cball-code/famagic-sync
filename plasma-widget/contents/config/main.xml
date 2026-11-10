@@ -20,5 +20,8 @@
         <entry name="backgroundBlur" type="Bool">
             <default>true</default>
         </entry>
+        <entry name="backgroundBlurStrength" type="Double">
+            <default>0.55</default>
+        </entry>
     </group>
 </kcfg>

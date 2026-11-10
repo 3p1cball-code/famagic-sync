@@ -5,11 +5,12 @@ import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasma5support as Plasma5Support
 import org.kde.kirigami as Kirigami
 import QtQuick.Controls as QQC2
+import QtQuick.Effects
 
 PlasmoidItem {
     id: root
 
-    Plasmoid.backgroundHints: Plasmoid.configuration.backgroundBlur ? PlasmaCore.Types.TranslucentBackground : PlasmaCore.Types.NoBackground
+    Plasmoid.backgroundHints: Plasmoid.configuration.backgroundBlur ? PlasmaCore.Types.NoBackground : PlasmaCore.Types.TranslucentBackground
 
     property var snap: null
     property var tasks: []
@@ -242,6 +243,31 @@ PlasmoidItem {
         Layout.minimumHeight: Kirigami.Units.gridUnit * 9
         Layout.preferredWidth: Kirigami.Units.gridUnit * 20
         Layout.preferredHeight: Kirigami.Units.gridUnit * 14
+
+        ShaderEffectSource {
+            id: wallpaperSource
+            width: parent.width
+            height: parent.height
+            sourceItem: Plasmoid.containment.wallpaperGraphicsObject
+            sourceRect: {
+                var wgo = Plasmoid.containment.wallpaperGraphicsObject;
+                if (!wgo)
+                    return Qt.rect(0, 0, 0, 0);
+                return Qt.rect(plasmoid.geometry.x - wgo.x, plasmoid.geometry.y - wgo.y, width, height);
+            }
+            live: false
+            visible: false
+        }
+
+        MultiEffect {
+            anchors.fill: parent
+            source: wallpaperSource
+            visible: Plasmoid.configuration.backgroundBlur && wallpaperSource.sourceItem !== null
+            blurEnabled: true
+            blur: Plasmoid.configuration.backgroundBlurStrength
+            blurMax: 64
+            autoPaddingEnabled: false
+        }
 
         Rectangle {
             anchors.fill: parent

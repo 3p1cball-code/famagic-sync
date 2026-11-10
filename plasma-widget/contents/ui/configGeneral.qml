@@ -12,6 +12,7 @@ KCM.SimpleKCM {
     property string cfg_listIds: ""
     property alias cfg_backgroundOpacity: bgOpacity.value
     property alias cfg_backgroundBlur: bgBlur.checked
+    property alias cfg_backgroundBlurStrength: bgBlurStrength.value
     property var listModel: []
     property var memberModel: [
         { text: "Alle", value: "*" },
@@ -113,7 +114,23 @@ KCM.SimpleKCM {
         QQC2.CheckBox {
             id: bgBlur
             Kirigami.FormData.label: i18n("Unschärfe:")
-            text: i18n("Hintergrund weichzeichnen (KWin-Blur)")
+            text: i18n("Tapete hinter dem Widget weichzeichnen")
+        }
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Unschärfe-Stärke:")
+            QQC2.Slider {
+                id: bgBlurStrength
+                from: 0.0
+                to: 1.0
+                stepSize: 0.05
+                enabled: bgBlur.checked
+                Layout.preferredWidth: Kirigami.Units.gridUnit * 12
+            }
+            QQC2.Label {
+                text: Math.round(bgBlurStrength.value * 100) + " %"
+                Layout.preferredWidth: Kirigami.Units.gridUnit * 3
+            }
         }
 
         QQC2.ComboBox {
