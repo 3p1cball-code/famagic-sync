@@ -9,7 +9,7 @@ import QtQuick.Controls as QQC2
 PlasmoidItem {
     id: root
 
-    Plasmoid.backgroundHints: PlasmaCore.Types.TranslucentBackground
+    Plasmoid.backgroundHints: Plasmoid.configuration.backgroundBlur ? PlasmaCore.Types.TranslucentBackground : PlasmaCore.Types.NoBackground
 
     property var snap: null
     property var tasks: []
@@ -242,6 +242,13 @@ PlasmoidItem {
         Layout.minimumHeight: Kirigami.Units.gridUnit * 9
         Layout.preferredWidth: Kirigami.Units.gridUnit * 20
         Layout.preferredHeight: Kirigami.Units.gridUnit * 14
+
+        Rectangle {
+            anchors.fill: parent
+            radius: Kirigami.Units.gridUnit * 0.6
+            color: Qt.rgba(0.05, 0.05, 0.08, Plasmoid.configuration.backgroundOpacity)
+            visible: Plasmoid.configuration.backgroundOpacity > 0.01
+        }
 
         ColumnLayout {
             anchors.fill: parent

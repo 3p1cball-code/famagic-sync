@@ -10,6 +10,8 @@ KCM.SimpleKCM {
     property alias cfg_rangeMode: rangeCombo.currentIndex
     property string cfg_filterMember: "*"
     property string cfg_listIds: ""
+    property alias cfg_backgroundOpacity: bgOpacity.value
+    property alias cfg_backgroundBlur: bgBlur.checked
     property var listModel: []
     property var memberModel: [
         { text: "Alle", value: "*" },
@@ -92,6 +94,27 @@ KCM.SimpleKCM {
     Kirigami.FormLayout {
         anchors.left: parent.left
         anchors.right: parent.right
+
+        RowLayout {
+            Kirigami.FormData.label: i18n("Hintergrund-Deckkraft:")
+            QQC2.Slider {
+                id: bgOpacity
+                from: 0.0
+                to: 1.0
+                stepSize: 0.05
+                Layout.preferredWidth: Kirigami.Units.gridUnit * 12
+            }
+            QQC2.Label {
+                text: Math.round(bgOpacity.value * 100) + " %"
+                Layout.preferredWidth: Kirigami.Units.gridUnit * 3
+            }
+        }
+
+        QQC2.CheckBox {
+            id: bgBlur
+            Kirigami.FormData.label: i18n("Unschärfe:")
+            text: i18n("Hintergrund weichzeichnen (KWin-Blur)")
+        }
 
         QQC2.ComboBox {
             id: rangeCombo
