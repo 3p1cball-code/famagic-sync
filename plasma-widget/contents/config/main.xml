@@ -17,11 +17,8 @@
         <entry name="backgroundOpacity" type="Double">
             <default>0.45</default>
         </entry>
-        <entry name="backgroundBlur" type="Bool">
-            <default>true</default>
-        </entry>
-        <entry name="backgroundBlurStrength" type="Double">
-            <default>0.55</default>
+        <entry name="backgroundBlurRadius" type="Double">
+            <default>0.0</default>
         </entry>
     </group>
 </kcfg>

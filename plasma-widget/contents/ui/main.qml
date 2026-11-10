@@ -10,7 +10,7 @@ import QtQuick.Effects
 PlasmoidItem {
     id: root
 
-    Plasmoid.backgroundHints: Plasmoid.configuration.backgroundBlur ? PlasmaCore.Types.NoBackground : PlasmaCore.Types.TranslucentBackground
+    Plasmoid.backgroundHints: PlasmaCore.Types.NoBackground
 
     property var snap: null
     property var tasks: []
@@ -18,6 +18,7 @@ PlasmoidItem {
     property bool vegaError: false
     property bool cloudOffline: false
     property int pending: 0
+    property string wallpaperPath: ""
     readonly property string serverUrl: "http://192.168.33.24:8791"
     readonly property var rangeLabels: [ "Diese Woche", "Heute", "7 Tage", "14 Tage", "30 Tage", "Alle" ]
     readonly property string accent: "#e8a13a"
@@ -206,7 +207,30 @@ PlasmoidItem {
         onTriggered: root.fetchData()
     }
 
-    Component.onCompleted: fetchData()
+    Component.onCompleted: { fetchData(); root.loadWallpaper(); }
+
+    Plasma5Support.DataSource {
+        id: wallpaperExec
+        engine: "executable"
+        connectedSources: []
+        onNewData: function(source, data) {
+            disconnectSource(source);
+            if (data["exit code"] === 0) {
+                var p = data["stdout"].trim();
+                if (p.length > 0 && p !== "null")
+                    root.wallpaperPath = p;
+            }
+        }
+    }
+
+    function loadWallpaper() {
+        var cid = Plasmoid.containment.id;
+        var plugin = Plasmoid.containment.wallpaperPlugin || "org.kde.image";
+        if (!cid)
+            return;
+        wallpaperExec.connectSource("kreadconfig6 --file plasma-org.kde.plasma.desktop-appletsrc --group Containments --group " + cid +
+                                    " --group Wallpaper --group " + plugin + " --group General --key Image");
+    }
 
     Connections {
         target: Plasmoid.configuration
@@ -246,28 +270,31 @@ PlasmoidItem {
         Layout.preferredWidth: Kirigami.Units.gridUnit * 20
         Layout.preferredHeight: Kirigami.Units.gridUnit * 14
 
-        ShaderEffectSource {
-            id: wallpaperSource
-            width: parent.width
-            height: parent.height
-            sourceItem: Plasmoid.containment.wallpaperGraphicsObject
-            sourceRect: {
-                var wgo = Plasmoid.containment.wallpaperGraphicsObject;
-                if (!wgo)
-                    return Qt.rect(0, 0, 0, 0);
-                var p = fullRoot.mapToItem(wgo, 0, 0);
-                return Qt.rect(p.x, p.y, fullRoot.width, fullRoot.height);
-            }
-            live: false
+        Image {
+            id: wallpaperImage
+            anchors.fill: parent
             visible: false
+            asynchronous: true
+            cache: true
+            source: root.wallpaperPath ? "file://" + root.wallpaperPath : ""
+            fillMode: Image.PreserveAspectCrop
+            sourceClipRect: {
+                if (!sourceSize.width || !sourceSize.height)
+                    return Qt.rect(0, 0, 0, 0);
+                var s = Math.max(Screen.width / sourceSize.width, Screen.height / sourceSize.height);
+                var p = fullRoot.mapToItem(null, 0, 0);
+                var ox = (Screen.width - sourceSize.width * s) / 2;
+                var oy = (Screen.height - sourceSize.height * s) / 2;
+                return Qt.rect((p.x - ox) / s, (p.y - oy) / s, fullRoot.width / s, fullRoot.height / s);
+            }
         }
 
         MultiEffect {
             anchors.fill: parent
-            source: wallpaperSource
-            visible: Plasmoid.configuration.backgroundBlur && wallpaperSource.sourceItem !== null
+            source: wallpaperImage
+            visible: root.wallpaperPath !== "" && Plasmoid.configuration.backgroundBlurRadius > 0.001
             blurEnabled: true
-            blur: Plasmoid.configuration.backgroundBlurStrength
+            blur: Plasmoid.configuration.backgroundBlurRadius
             blurMax: 64
             autoPaddingEnabled: false
         }

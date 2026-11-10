@@ -11,8 +11,7 @@ KCM.SimpleKCM {
     property string cfg_filterMember: "*"
     property string cfg_listIds: ""
     property alias cfg_backgroundOpacity: bgOpacity.value
-    property alias cfg_backgroundBlur: bgBlur.checked
-    property alias cfg_backgroundBlurStrength: bgBlurStrength.value
+    property alias cfg_backgroundBlurRadius: bgBlurRadius.value
     property var listModel: []
     property var memberModel: [
         { text: "Alle", value: "*" },
@@ -111,24 +110,17 @@ KCM.SimpleKCM {
             }
         }
 
-        QQC2.CheckBox {
-            id: bgBlur
-            Kirigami.FormData.label: i18n("Unschärfe:")
-            text: i18n("Tapete hinter dem Widget weichzeichnen")
-        }
-
         RowLayout {
-            Kirigami.FormData.label: i18n("Unschärfe-Stärke:")
+            Kirigami.FormData.label: i18n("Unschärfe:")
             QQC2.Slider {
-                id: bgBlurStrength
+                id: bgBlurRadius
                 from: 0.0
                 to: 1.0
                 stepSize: 0.05
-                enabled: bgBlur.checked
                 Layout.preferredWidth: Kirigami.Units.gridUnit * 12
             }
             QQC2.Label {
-                text: Math.round(bgBlurStrength.value * 100) + " %"
+                text: bgBlurRadius.value <= 0.001 ? i18n("aus") : Math.round(bgBlurRadius.value * 100) + " %"
                 Layout.preferredWidth: Kirigami.Units.gridUnit * 3
             }
         }
