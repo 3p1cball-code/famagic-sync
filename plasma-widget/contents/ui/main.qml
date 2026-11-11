@@ -5,7 +5,6 @@ import org.kde.plasma.core as PlasmaCore
 import org.kde.plasma.plasma5support as Plasma5Support
 import org.kde.kirigami as Kirigami
 import QtQuick.Controls as QQC2
-import QtQuick.Effects
 
 PlasmoidItem {
     id: root
@@ -18,7 +17,6 @@ PlasmoidItem {
     property bool vegaError: false
     property bool cloudOffline: false
     property int pending: 0
-    property string wallpaperPath: ""
     readonly property string serverUrl: "http://192.168.33.24:8791"
     readonly property var rangeLabels: [ "Diese Woche", "Heute", "7 Tage", "14 Tage", "30 Tage", "Alle" ]
     readonly property string accent: "#e8a13a"
@@ -207,30 +205,7 @@ PlasmoidItem {
         onTriggered: root.fetchData()
     }
 
-    Component.onCompleted: { fetchData(); root.loadWallpaper(); }
-
-    Plasma5Support.DataSource {
-        id: wallpaperExec
-        engine: "executable"
-        connectedSources: []
-        onNewData: function(source, data) {
-            disconnectSource(source);
-            if (data["exit code"] === 0) {
-                var p = data["stdout"].trim();
-                if (p.length > 0 && p !== "null")
-                    root.wallpaperPath = p;
-            }
-        }
-    }
-
-    function loadWallpaper() {
-        var cid = Plasmoid.containment.id;
-        var plugin = Plasmoid.containment.wallpaperPlugin || "org.kde.image";
-        if (!cid)
-            return;
-        wallpaperExec.connectSource("kreadconfig6 --file plasma-org.kde.plasma.desktop-appletsrc --group Containments --group " + cid +
-                                    " --group Wallpaper --group " + plugin + " --group General --key Image");
-    }
+    Component.onCompleted: fetchData()
 
     Connections {
         target: Plasmoid.configuration
@@ -270,35 +245,10 @@ PlasmoidItem {
         Layout.preferredWidth: Kirigami.Units.gridUnit * 20
         Layout.preferredHeight: Kirigami.Units.gridUnit * 14
 
-        Image {
-            id: wallpaperImage
+        WallpaperBlur {
             anchors.fill: parent
-            visible: true
-            opacity: 1.0
-            asynchronous: true
-            cache: true
-            source: root.wallpaperPath ? "file://" + root.wallpaperPath : ""
-            fillMode: Image.PreserveAspectCrop
-            sourceClipRect: {
-                if (!sourceSize.width || !sourceSize.height)
-                    return Qt.rect(0, 0, 0, 0);
-                var s = Math.max(Screen.width / sourceSize.width, Screen.height / sourceSize.height);
-                var p = fullRoot.mapToItem(null, 0, 0);
-                var ox = (Screen.width - sourceSize.width * s) / 2;
-                var oy = (Screen.height - sourceSize.height * s) / 2;
-                return Qt.rect((p.x - ox) / s, (p.y - oy) / s, fullRoot.width / s, fullRoot.height / s);
-            }
-        }
-
-        MultiEffect {
-            anchors.fill: parent
-            source: wallpaperImage
-            visible: root.wallpaperPath !== "" && Plasmoid.configuration.backgroundBlurRadius > 0.001
-            opacity: 1.0
-            blurEnabled: true
             blur: Plasmoid.configuration.backgroundBlurRadius
-            blurMax: 64
-            autoPaddingEnabled: false
+            radius: Kirigami.Units.gridUnit * 0.6
         }
 
         Rectangle {

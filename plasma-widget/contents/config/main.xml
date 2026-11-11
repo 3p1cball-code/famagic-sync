@@ -18,7 +18,7 @@
             <default>0.45</default>
         </entry>
         <entry name="backgroundBlurRadius" type="Double">
-            <default>0.0</default>
+            <default>0.5</default>
         </entry>
     </group>
 </kcfg>
