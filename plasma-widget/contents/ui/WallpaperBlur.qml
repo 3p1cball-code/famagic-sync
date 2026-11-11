@@ -3,7 +3,8 @@ import QtQuick.Effects
 import org.kde.plasma.plasmoid
 
 /*
- * Blurred copy of the desktop wallpaper directly behind this item.
+ * The card every one of these desktop widgets sits on: a blurred copy of the
+ * wallpaper directly behind it, a dark tint, and a hairline frame.
  *
  * Desktop widgets live in the same window as the wallpaper, so KWin's
  * blur-behind cannot reach them. Instead the containment's live wallpaper
@@ -12,18 +13,25 @@ import org.kde.plasma.plasmoid
  * with MultiEffect. Because it renders the real wallpaper item, it follows
  * slideshows, colour wallpapers and any fill mode automatically.
  *
+ * Shape: a rounded rectangle (radius), or any item given as maskItem - its
+ * alpha decides where the card is (deebot-map uses the room floor plan).
+ *
  * Shared between regenradar, famagic and deebot-map - keep the copies equal.
  */
 Item {
     id: bw
 
-    property real blur: 0.5          // 0..1, 0 = off
-    property real radius: 0          // corner radius of the blurred card
-    property int blurMax: 64         // px at blur = 1.0
+    property real blur: 0.5               // 0..1, 0 = off
+    property color tint: "transparent"    // drawn over the blur, inside the shape
+    property real radius: 0               // corner radius of the card
+    property bool frame: false            // hairline outline (rounded shape only)
+    property Item maskItem: null          // optional: alpha mask, same geometry as bw
+    property int blurMax: 64              // px at blur = 1.0
 
     readonly property int pad: blurMax
     property var wallpaper: null
-    readonly property bool active: blur > 0.001 && wallpaper !== null && width > 0 && height > 0
+    readonly property bool blurActive: blur > 0.001 && wallpaper !== null && width > 0 && height > 0
+    readonly property bool shown: blurActive || tint.a > 0.004
 
     // grab = region in wallpaper coordinates, offset = its origin relative to bw
     property rect grab: Qt.rect(0, 0, 0, 0)
@@ -91,11 +99,11 @@ Item {
         id: clipper
         anchors.fill: parent
         clip: true
-        visible: bw.active
-        layer.enabled: visible && bw.radius > 0
+        visible: bw.shown
+        layer.enabled: visible && (bw.maskItem !== null || bw.radius > 0)
         layer.effect: MultiEffect {
             maskEnabled: true
-            maskSource: mask
+            maskSource: bw.maskItem !== null ? bw.maskItem : roundMask
             maskThresholdMin: 0.5
             maskSpreadAtMin: 1.0
         }
@@ -106,7 +114,7 @@ Item {
             y: bw.offset.y
             width: bw.grab.width
             height: bw.grab.height
-            sourceItem: bw.active ? bw.wallpaper : null
+            sourceItem: bw.blurActive ? bw.wallpaper : null
             sourceRect: bw.grab
             live: true
             hideSource: false
@@ -119,16 +127,23 @@ Item {
             y: src.y
             width: src.width
             height: src.height
+            visible: bw.blurActive
             source: src
             autoPaddingEnabled: false
             blurEnabled: true
             blur: bw.blur
             blurMax: bw.blurMax
         }
+
+        Rectangle {
+            anchors.fill: parent
+            color: bw.tint
+            visible: bw.tint.a > 0.004
+        }
     }
 
     Item {
-        id: mask
+        id: roundMask
         anchors.fill: parent
         visible: false
         layer.enabled: true
@@ -137,5 +152,14 @@ Item {
             radius: bw.radius
             color: "black"
         }
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        visible: bw.frame && bw.maskItem === null
+        radius: bw.radius
+        color: "transparent"
+        border.width: 1
+        border.color: Qt.rgba(1, 1, 1, 0.12)
     }
 }

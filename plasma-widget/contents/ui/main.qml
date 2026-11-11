@@ -245,110 +245,109 @@ PlasmoidItem {
         Layout.preferredWidth: Kirigami.Units.gridUnit * 20
         Layout.preferredHeight: Kirigami.Units.gridUnit * 14
 
+        // same scale rule as regenradar/deebot-map, so the type matches
+        readonly property real ui: Math.max(1.3, Math.min(1.7, width / 460))
+        readonly property color ink: "#ffffff"
+
         WallpaperBlur {
             anchors.fill: parent
             blur: Plasmoid.configuration.backgroundBlurRadius
-            radius: Kirigami.Units.gridUnit * 0.6
+            tint: Qt.rgba(0, 0, 0, Plasmoid.configuration.backgroundOpacity)
+            radius: Kirigami.Units.cornerRadius
+            frame: true
         }
 
-        Rectangle {
-            anchors.fill: parent
-            radius: Kirigami.Units.gridUnit * 0.6
-            color: Qt.rgba(0.05, 0.05, 0.08, Plasmoid.configuration.backgroundOpacity)
-            visible: Plasmoid.configuration.backgroundOpacity > 0.01
+        Header {
+            id: header
+            anchors { left: parent.left; right: parent.right; top: parent.top }
+            ui: fullRoot.ui
+            title: "Famagic"
+            subtitle: root.rangeLabels[Plasmoid.configuration.rangeMode] + " · "
+                      + root.memberName(Plasmoid.configuration.filterMember)
+            value: root.snap ? String(root.tasks.length) : "–"
+            caption: root.statusText()
+            captionColor: root.statusColor()
+            captionOpacity: 0.9
+            dotColor: root.statusColor()
         }
 
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: Kirigami.Units.smallSpacing
-            spacing: Kirigami.Units.smallSpacing
+        QQC2.ScrollView {
+            id: scroll
+            anchors { left: parent.left; right: parent.right; top: header.bottom; bottom: footer.top
+                      leftMargin: Math.round(13 * fullRoot.ui); rightMargin: Math.round(13 * fullRoot.ui) }
+            clip: true
+            QQC2.ScrollBar.horizontal.policy: QQC2.ScrollBar.AlwaysOff
 
-            RowLayout {
-                Layout.fillWidth: true
-                QQC2.Label {
-                    text: "Famagic"
-                    font.bold: true
-                    color: root.accent
-                }
-                Item { Layout.fillWidth: true }
-                Rectangle {
-                    width: Kirigami.Units.smallSpacing
-                    height: width
-                    radius: width / 2
-                    color: root.statusColor()
-                }
-                QQC2.Label {
-                    text: root.statusText()
-                    color: root.statusColor()
-                    font: Kirigami.Theme.smallFont
-                }
-            }
+            Column {
+                width: scroll.availableWidth
+                spacing: Math.round(5 * fullRoot.ui)
 
-            QQC2.Label {
-                Layout.fillWidth: true
-                text: root.rangeLabels[Plasmoid.configuration.rangeMode] + " · " + root.memberName(Plasmoid.configuration.filterMember)
-                color: Kirigami.Theme.disabledTextColor
-                font: Kirigami.Theme.smallFont
-                elide: Text.ElideRight
-            }
+                Repeater {
+                    model: root.tasks
+                    delegate: Item {
+                        width: parent.width
+                        height: Math.max(due.implicitHeight, title.implicitHeight)
 
-            QQC2.ScrollView {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
-                QQC2.ScrollBar.horizontal.policy: QQC2.ScrollBar.AlwaysOff
-                ColumnLayout {
-                    width: parent.width
-                    spacing: Kirigami.Units.smallSpacing
-                    Repeater {
-                        model: root.tasks
-                        delegate: Item {
-                            Layout.fillWidth: true
-                            implicitHeight: row.implicitHeight
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: root.openApp()
-                            }
-                            RowLayout {
-                                id: row
-                                width: parent.width
-                                QQC2.Label {
-                                    text: root.dueText(modelData)
-                                    color: root.overdue(modelData) ? root.red : root.accent
-                                    font: Kirigami.Theme.smallFont
-                                    Layout.preferredWidth: Kirigami.Units.gridUnit * 5
-                                    Layout.alignment: Qt.AlignTop
-                                }
-                                QQC2.Label {
-                                    text: modelData.title || ""
-                                    color: Kirigami.Theme.textColor
-                                    Layout.fillWidth: true
-                                    wrapMode: Text.WordWrap
-                                }
-                            }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: root.openApp()
+                        }
+                        Text {
+                            id: due
+                            width: Math.round(62 * fullRoot.ui)
+                            y: Math.round(2 * fullRoot.ui)
+                            text: root.dueText(modelData).toUpperCase()
+                            color: root.overdue(modelData) ? root.red : root.accent
+                            opacity: 0.9
+                            elide: Text.ElideRight
+                            font.pixelSize: Math.round(7.5 * fullRoot.ui)
+                            font.letterSpacing: 1.4
+                            font.weight: Font.Medium
+                        }
+                        Text {
+                            id: title
+                            anchors { left: due.right; right: parent.right
+                                      leftMargin: Math.round(6 * fullRoot.ui) }
+                            text: modelData.title || ""
+                            color: fullRoot.ink
+                            opacity: 0.9
+                            wrapMode: Text.WordWrap
+                            font.pixelSize: Math.round(10 * fullRoot.ui)
                         }
                     }
                 }
             }
+        }
 
-            QQC2.Label {
-                visible: root.tasks.length === 0
-                Layout.fillWidth: true
-                text: root.vegaError ? "VEGA nicht erreichbar" : (root.snap ? "Keine fälligen Aufgaben" : "Lade …")
-                color: root.vegaError ? root.red : Kirigami.Theme.disabledTextColor
-                font: Kirigami.Theme.smallFont
-            }
+        Text {
+            anchors.centerIn: scroll
+            visible: root.tasks.length === 0
+            text: root.vegaError ? "VEGA NICHT ERREICHBAR"
+                                 : (root.snap ? "KEINE FÄLLIGEN AUFGABEN" : "LADE …")
+            color: root.vegaError ? root.red : fullRoot.ink
+            opacity: root.vegaError ? 0.9 : 0.4
+            font.pixelSize: Math.round(9 * fullRoot.ui)
+            font.letterSpacing: 2
+        }
 
-            MouseArea {
-                Layout.fillWidth: true
-                height: openLabel.implicitHeight
-                onClicked: root.openApp()
-                QQC2.Label {
-                    id: openLabel
-                    text: "Öffnen"
-                    color: root.accent
-                    font: Kirigami.Theme.smallFont
-                }
+        MouseArea {
+            id: footer
+            anchors { left: parent.left; bottom: parent.bottom
+                      leftMargin: Math.round(13 * fullRoot.ui); bottomMargin: Math.round(9 * fullRoot.ui) }
+            width: openLabel.implicitWidth
+            height: openLabel.implicitHeight + Math.round(6 * fullRoot.ui)
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.openApp()
+            Text {
+                id: openLabel
+                anchors.bottom: parent.bottom
+                text: "ÖFFNEN"
+                color: root.accent
+                opacity: footer.containsMouse ? 1.0 : 0.6
+                font.pixelSize: Math.round(7.5 * fullRoot.ui)
+                font.letterSpacing: 1.4
+                font.weight: Font.Medium
             }
         }
     }
